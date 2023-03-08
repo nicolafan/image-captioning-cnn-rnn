@@ -1,4 +1,6 @@
 import spacy
+import json
+import os
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -36,7 +38,7 @@ class CustomSpacyTokenizer:
             self.vocab["<oov>"] = 3
 
     def fit(self, texts):
-        """Fit the tokenizer on a collection of texts.
+        """Fit the tokenizer on a collection of texts
 
         Parameters
         ----------
@@ -77,7 +79,7 @@ class CustomSpacyTokenizer:
             idx += 1
 
     def text_to_sequence(self, text):
-        """Convert text to sequence of integer words indexes.
+        """Convert text to sequence of integer words indexes
 
         Parameters
         ----------
@@ -112,3 +114,15 @@ class CustomSpacyTokenizer:
     def sequence_to_text(self, sequence):
         inv_vocab = dict((v, k) for k, v in self.vocab.items())
         return " ".join(inv_vocab[x] for x in sequence)
+
+    def save_vocab_json(self, dir):
+        with open(f"{str(dir) + os.sep}vocab.json", "w") as file:
+            json.dump(self.vocab, file)
+
+    def load_vocab_json(self, vocab_path):
+        with open(vocab_path, "r") as file:
+            self.vocab = json.load(file)
+            if "<oov>" in self.vocab:
+                self.oov = True
+            else:
+                self.oov = False
