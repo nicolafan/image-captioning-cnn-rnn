@@ -1,10 +1,27 @@
-image-captioning-cnn-rnn
+Image Captioning with CNN and RNN
 ==============================
 
-Tensorflow/Keras implementation of an image captioning neural network, using CNN and RNN
+Tensorflow/Keras implementation of an image captioning neural network, using CNN and RNN.
 
-Project Organization
-------------
+# Getting Started
+
+Install the Python requirements in your virtual environment.
+
+The dataset used is [Flickr8k](https://www.kaggle.com/datasets/adityajn105/flickr8k), containing 8000 images, where each image is associated with five different captions.
+
+From the project root run:
+```
+python -m src.data.download_dataset
+```
+to download the dataset from Kaggle. You will need to setup your Kaggle username and API key locally ([instructions](https://www.kaggle.com/datasets/adityajn105/flickr8k)). Check if the dataset has been correctly downloaded inside `data/raw`.
+
+You can then run:
+```
+python -m src.data.make_dataset
+```
+to transform the captions into sequences using the Spacy custom tokenizer contained in this project and store the train/val/test sets inside `data/processed`. The splits will be stored as TFRecords containing examples made of the images together with their five captions. Using the TFRecords will make it easy to use Tensorflow Data API to train and evaluate the model. Each TFRecords contains 200 examples. The ids of the images in the split are stored in the `.txt` files in `data/raw`, already loaded in the repository. This should be the official split proposed by the creators of Flickr8k. 
+
+# Project Organization
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -55,3 +72,9 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+# References
+
+[1] Vinyals, Oriol, et al. ["Show and tell: A neural image caption generator."](https://arxiv.org/abs/1411.4555) Proceedings of the IEEE conference on computer vision and pattern recognition. 2015.
+
+[2] Tanti, Marc, Albert Gatt, and Kenneth P. Camilleri. ["Where to put the image in an image caption generator."](https://arxiv.org/abs/1703.09137) Natural Language Engineering 24.3 (2018): 467-489.
