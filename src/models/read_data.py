@@ -1,11 +1,14 @@
 from pathlib import Path
+import json
 import tensorflow as tf
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 
 
-def make_dataset(split, img_shape, caption_length, batch_size):
-    split_dir = PROJECT_DIR / "data" / "processed" / split
+def read_split_dataset(split, img_shape, caption_length, batch_size):
+    processed_data_dir = PROJECT_DIR / "data" / "processed"
+    
+    split_dir = processed_data_dir / split
     filenames = tf.data.Dataset.list_files(str(split_dir / "*.tf_records"))
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads=tf.data.AUTOTUNE)
 
@@ -41,7 +44,13 @@ def make_dataset(split, img_shape, caption_length, batch_size):
         caption_seqs = tf.ensure_shape(caption_seqs, [None, caption_length])
 
         return image, caption_seqs
+    
+    def _to_input_output_pairs(image, caption_seq):
+        slid_caption_seq = tf.roll(caption_seq, shift=-1, axis=0)
+        slid_caption_seq = tf.tensor_scatter_nd_update(slid_caption_seq, [[caption_length-1]], [0])
+        slid_caption_seq -= 1
 
+        return (image, caption_seq), slid_caption_seq
         # for i in range(caption_seqs.shape[0]):
         #     caption_seq = caption_seqs[i]
         #     slid_caption_seq = tf.roll(caption_seq, shift=-1, axis=0)
@@ -57,13 +66,7 @@ def make_dataset(split, img_shape, caption_length, batch_size):
     image_captions_dataset = parsed_dataset.map(_to_image_captions_pairs)
     image_caption_dataset = image_captions_dataset.flat_map(
         lambda image, captions: tf.data.Dataset.from_tensor_slices(captions).map(
-            lambda caption: (image, caption)
+            lambda caption: _to_input_output_pairs(image, caption)
         )
     )
     return image_caption_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-
-
-t = make_dataset("train", (256, 256, 3), 16, 1)
-
-for x, y in t.take(2):
-    print(x, y)
