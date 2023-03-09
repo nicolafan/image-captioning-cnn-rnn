@@ -21,6 +21,12 @@ python -m data.make_dataset
 ```
 to transform the captions into sequences using the Spacy custom tokenizer contained in this project and store the train/val/test sets inside `/data/processed`. The splits will be stored as TFRecords containing examples made of the images together with their five captions. Using the TFRecords will make it easy to use Tensorflow Data API to train and evaluate the model. Each TFRecords contains 200 examples. The ids of the images in the split are stored in the `.txt` files in `data/raw`, already loaded in the repository. This should be the official split proposed by the creators of Flickr8k. 
 
+You can modify the model in the source at `models/model.py` and change the training parameters in `models/train_model.py`. Then training can be started with:
+```
+python -m models.train_model
+```
+and it will show the loss and accuracy (considering teacher forcing) of the model at training time. It will also compute the same values on the validation dataset. The weights of the trained model are saved inside `/models/weights`.
+
 # Project Organization
 
     ├── LICENSE
