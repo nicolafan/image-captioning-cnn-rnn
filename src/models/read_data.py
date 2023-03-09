@@ -53,14 +53,12 @@ def make_dataset(split, img_shape, caption_length, batch_size):
 
         # return tf.data.Dataset.from_tensor_slices(_generate_expanded_example, output_signature=example_spec)
 
-        
-
     parsed_dataset = dataset.map(_parse_example_fn)
-    image_captions_dataset = parsed_dataset.map(
-        _to_image_captions_pairs
-    )
+    image_captions_dataset = parsed_dataset.map(_to_image_captions_pairs)
     image_caption_dataset = image_captions_dataset.flat_map(
-        lambda image, captions: tf.data.Dataset.from_tensor_slices(captions).map(lambda caption: (image, caption))
+        lambda image, captions: tf.data.Dataset.from_tensor_slices(captions).map(
+            lambda caption: (image, caption)
+        )
     )
     return image_caption_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 

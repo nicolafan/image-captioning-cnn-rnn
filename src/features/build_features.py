@@ -121,7 +121,7 @@ class CustomSpacyTokenizer:
             "vocab_size": self.vocab_size,
             "oov": self.oov,
             "pad_sequences": self.pad_sequences,
-            "vocab": self.vocab
+            "vocab": self.vocab,
         }
         with open(f"{str(dir) + os.sep}tokenizer.json", "w") as file:
             json.dump(d, file, indent=2)
@@ -135,5 +135,5 @@ class CustomSpacyTokenizer:
 
         tokenizer = CustomSpacyTokenizer(**config)
         tokenizer.vocab = vocab
-        
+
         return tokenizer
