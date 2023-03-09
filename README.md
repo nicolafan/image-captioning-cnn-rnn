@@ -9,17 +9,17 @@ Install the Python requirements in your virtual environment.
 
 The dataset used is [Flickr8k](https://www.kaggle.com/datasets/adityajn105/flickr8k), containing 8000 images, where each image is associated with five different captions.
 
-From the project root run:
+Enter the `src` dir and run:
 ```
-python -m src.data.download_dataset
+python -m data.download_dataset
 ```
-to download the dataset from Kaggle. You will need to setup your Kaggle username and API key locally ([instructions](https://www.kaggle.com/datasets/adityajn105/flickr8k)). Check if the dataset has been correctly downloaded inside `data/raw`.
+to download the dataset from Kaggle. You will need to setup your Kaggle username and API key locally ([instructions](https://www.kaggle.com/datasets/adityajn105/flickr8k)). Check if the dataset has been correctly downloaded inside `/data/raw`.
 
 You can then run:
 ```
-python -m src.data.make_dataset
+python -m data.make_dataset
 ```
-to transform the captions into sequences using the Spacy custom tokenizer contained in this project and store the train/val/test sets inside `data/processed`. The splits will be stored as TFRecords containing examples made of the images together with their five captions. Using the TFRecords will make it easy to use Tensorflow Data API to train and evaluate the model. Each TFRecords contains 200 examples. The ids of the images in the split are stored in the `.txt` files in `data/raw`, already loaded in the repository. This should be the official split proposed by the creators of Flickr8k. 
+to transform the captions into sequences using the Spacy custom tokenizer contained in this project and store the train/val/test sets inside `/data/processed`. The splits will be stored as TFRecords containing examples made of the images together with their five captions. Using the TFRecords will make it easy to use Tensorflow Data API to train and evaluate the model. Each TFRecords contains 200 examples. The ids of the images in the split are stored in the `.txt` files in `data/raw`, already loaded in the repository. This should be the official split proposed by the creators of Flickr8k. 
 
 # Project Organization
 
