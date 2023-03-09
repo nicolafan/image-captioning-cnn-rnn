@@ -78,6 +78,9 @@ class CustomSpacyTokenizer:
             self.vocab[word] = idx
             idx += 1
 
+        if self.vocab_size is None:
+            self.vocab_size = len(self.vocab)
+
     def text_to_sequence(self, text):
         """Convert text to sequence of integer words indexes
 
@@ -127,7 +130,7 @@ class CustomSpacyTokenizer:
             json.dump(d, file, indent=2)
 
     @staticmethod
-    def load_from_json(self, tokenizer_json_path):
+    def load_from_json(tokenizer_json_path):
         file = open(tokenizer_json_path, "r")
         config = json.load(file)
         vocab = config["vocab"]
