@@ -56,7 +56,9 @@ def image_example(image_string, captions, tokenizer):
         A training example for the TFRecords.
     """
     image_shape = tf.io.decode_jpeg(image_string).shape
-    caption_seqs = [tokenizer.text_to_sequence(caption) for caption in captions] # tokenize the textual caption
+    caption_seqs = [
+        tokenizer.text_to_sequence(caption) for caption in captions
+    ]  # tokenize the textual caption
 
     feature = {
         "height": _int64_feature(image_shape[0]),
@@ -70,6 +72,23 @@ def image_example(image_string, captions, tokenizer):
 
 
 def save_tf_records(split, input_dir, output_dir, captions_df, tokenizer):
+    """Convert images and related captions and save them to TFRecords
+
+    Parameters
+    ----------
+    split : str
+        Identification of the split (train, test, val).
+    input_dir : Path
+        Directory in which the data is initially stored (should be /data/raw).
+    output_dir : Path
+        Directory in which to save the records of the split (should be /data/processed).
+    captions_df : DataFrame
+        A dataframe having two columns: `image`, with the filename of the images and `caption`
+        containing at each row a pair image-caption (there could be multiple rows for a single)
+        image if it has multiple captions.
+    tokenizer : CustomSpacyTokenizer
+        The tokenizer to transform the strings (captions) to sequences.
+    """
     split_file = (input_dir / f"{split}_split_filenames.txt").open("r")
     split_ids = [line.strip() for line in split_file.readlines()]
 
@@ -77,13 +96,17 @@ def save_tf_records(split, input_dir, output_dir, captions_df, tokenizer):
 
     # make multiple TFRecords for the images in the split, where each record contains 200 images
     for file_n in range(math.ceil(len(split_ids) / 200)):
-        next_rec_ids = split_ids[file_n*200:file_n*200+200]
+        next_rec_ids = split_ids[file_n * 200 : file_n * 200 + 200]
         record_file = output_dir / split / f"images_{str(file_n).zfill(3)}.tf_records"
         with tf.io.TFRecordWriter(str(record_file)) as writer:
             for image_id in next_rec_ids:
-                image_captions = captions_df[captions_df["image"] == image_id]["caption"].tolist()
+                image_captions = captions_df[captions_df["image"] == image_id][
+                    "caption"
+                ].tolist()
                 if image_id in split_ids:
-                    image_string = open(input_dir / "images" / f"{str(image_id)}", "rb").read()
+                    image_string = open(
+                        input_dir / "images" / f"{str(image_id)}", "rb"
+                    ).read()
                     tf_example = image_example(image_string, image_captions, tokenizer)
                     writer.write(tf_example.SerializeToString())
 
@@ -102,12 +125,14 @@ def main():
     processed_data_dir = project_dir / "data" / "processed"
 
     # create and fit the tokenizer
-    tokenizer = CustomSpacyTokenizer(max_len=-1, vocab_size=8000, oov=False, pad_sequences=True)
+    tokenizer = CustomSpacyTokenizer(
+        max_len=-1, vocab_size=8000, oov=False, pad_sequences=True
+    )
     captions_df = pd.read_csv(raw_data_dir / "captions.txt", sep=",")
 
     logger.info("fitting tokenizer on captions")
     tokenizer.fit(captions_df["caption"].tolist())
-    tokenizer.save_vocab_json(processed_data_dir)
+    tokenizer.save_to_json(processed_data_dir)
     logger.info("tokenizer trained!")
 
     # create the tf records
