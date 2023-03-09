@@ -46,11 +46,11 @@ class CustomSpacyTokenizer:
             A collection of texts as strings.
         """
         counts = {}
-        max_text_len = 0
+        max_text_len = 2
 
         for text in texts:
             doc = nlp(text)
-            text_len = 0
+            text_len = 2
             for token in doc:
                 if not token.is_punct:
                     if not token.lower_ in counts:
@@ -115,14 +115,25 @@ class CustomSpacyTokenizer:
         inv_vocab = dict((v, k) for k, v in self.vocab.items())
         return " ".join(inv_vocab[x] for x in sequence)
 
-    def save_vocab_json(self, dir):
-        with open(f"{str(dir) + os.sep}vocab.json", "w") as file:
-            json.dump(self.vocab, file)
+    def save_to_json(self, dir):
+        d = {
+            "max_len": self.max_len,
+            "vocab_size": self.vocab_size,
+            "oov": self.oov,
+            "pad_sequences": self.pad_sequences,
+            "vocab": self.vocab
+        }
+        with open(f"{str(dir) + os.sep}tokenizer.json", "w") as file:
+            json.dump(d, file, indent=2)
 
-    def load_vocab_json(self, vocab_path):
-        with open(vocab_path, "r") as file:
-            self.vocab = json.load(file)
-            if "<oov>" in self.vocab:
-                self.oov = True
-            else:
-                self.oov = False
+    @staticmethod
+    def load_from_json(self, tokenizer_json_path):
+        file = open(tokenizer_json_path, "r")
+        config = json.load(file)
+        vocab = config["vocab"]
+        del config["vocab"]
+
+        tokenizer = CustomSpacyTokenizer(**config)
+        tokenizer.vocab = vocab
+        
+        return tokenizer
