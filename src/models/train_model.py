@@ -12,6 +12,7 @@ from models.read_data import read_split_dataset
 
 
 def main():
+    tf.random.set_seed(42)
     project_dir = Path(__file__).resolve().parents[2]
     processed_data_dir = project_dir / "data" / "processed"
     models_dir = project_dir / "models"
@@ -47,8 +48,10 @@ def main():
     # save weights
     timestr = time.strftime("%Y%m%d-%H%M%S")
     weights_dir = models_dir / "weights"
-    os.makedirs(weights_dir, exists_ok=True)
-    model.save_weights(f"{os.path.abspath(weights_dir)}/train_{timestr}")
+    os.makedirs(weights_dir, exist_ok=True)
+    weights_filename = f"{os.path.abspath(weights_dir)}/train_{timestr}.h5"
+    model.save_weights(weights_filename)
+    print(f"saved model weights in {weights_filename}")
 
 
 if __name__ == "__main__":

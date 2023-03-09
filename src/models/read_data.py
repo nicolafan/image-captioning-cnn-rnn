@@ -53,17 +53,7 @@ def read_split_dataset(split, img_shape, caption_length, batch_size):
         slid_caption_seq -= 1
 
         return (image, caption_seq), slid_caption_seq
-        # for i in range(caption_seqs.shape[0]):
-        #     caption_seq = caption_seqs[i]
-        #     slid_caption_seq = tf.roll(caption_seq, shift=-1, axis=0)
-        #     slid_caption_seq = tf.tensor_scatter_nd_update(
-        #         slid_caption_seq, [[caption_length - 1]], [0]
-        #     )
-        #     slid_caption_seq -= 1
-        #     yield (image, caption_seq), slid_caption_seq
-
-        # return tf.data.Dataset.from_tensor_slices(_generate_expanded_example, output_signature=example_spec)
-
+    
     parsed_dataset = dataset.map(_parse_example_fn)
     image_captions_dataset = parsed_dataset.map(_to_image_captions_pairs)
     image_caption_dataset = image_captions_dataset.flat_map(
