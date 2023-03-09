@@ -7,7 +7,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[2]
 
 def read_split_dataset(split, img_shape, caption_length, batch_size):
     processed_data_dir = PROJECT_DIR / "data" / "processed"
-    
+
     split_dir = processed_data_dir / split
     filenames = tf.data.Dataset.list_files(str(split_dir / "*.tf_records"))
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads=tf.data.AUTOTUNE)
@@ -44,10 +44,12 @@ def read_split_dataset(split, img_shape, caption_length, batch_size):
         caption_seqs = tf.ensure_shape(caption_seqs, [None, caption_length])
 
         return image, caption_seqs
-    
+
     def _to_input_output_pairs(image, caption_seq):
         slid_caption_seq = tf.roll(caption_seq, shift=-1, axis=0)
-        slid_caption_seq = tf.tensor_scatter_nd_update(slid_caption_seq, [[caption_length-1]], [0])
+        slid_caption_seq = tf.tensor_scatter_nd_update(
+            slid_caption_seq, [[caption_length - 1]], [0]
+        )
         slid_caption_seq -= 1
 
         return (image, caption_seq), slid_caption_seq

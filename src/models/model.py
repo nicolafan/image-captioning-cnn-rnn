@@ -63,7 +63,7 @@ class ShowAndTell(keras.Model):
         embedding1 = self.embedding1(input_caption)
 
         # decode
-        if self.stateful or self.lstm1.states[0] is None:
+        if not self.stateful or self.lstm1.states[0] is None:
             lstm1 = self.lstm1(
                 embedding1, mask=mask, initial_state=[dropout1, tf.zeros_like(dropout1)]
             )
