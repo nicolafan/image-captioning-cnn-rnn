@@ -1,9 +1,18 @@
-Image Captioning with CNN and RNN
-==============================
+# Image Captioning with CNN and RNN
 
 Tensorflow/Keras implementation of an image captioning neural network, using CNN and RNN.
 
-# Getting Started
+## Description
+
+This is an unofficial implementation of the image captioning model proposed in the paper ["Show and tell: A neural image caption generator."](https://arxiv.org/abs/1411.4555). 
+
+This implementation is a faithful reproduction of the technique proposed in the paper, where during training, we provide the model with **examples composed of an image, its caption (inputs) and the caption with words shifted one position to the left (ground-truth)**; this approach is faster during training and easier to understand than the other possible approach based on feeding prefixes of the captions to the model and predicting a single word for prefix example. The input caption is needed since we apply **teacher forcing** while training.
+
+The following diagram shows the components of the model during training (in red the losses for each timestep).
+
+![diagram of the model during training](reports/figures/training_model.png)
+
+## Getting Started
 
 Install the Python requirements in your virtual environment.
 
@@ -27,7 +36,13 @@ python -m models.train_model
 ```
 and it will show the loss and accuracy (considering teacher forcing) of the model at training time. It will also compute the same values on the validation dataset. The weights of the trained model are saved inside `/models/weights`.
 
-# Project Organization
+To make predictions over custom images, enter your `*.jpg` files inside the `/data/custom` directory. Then run:
+```
+python -m models.predict_model
+```
+to show the generated captions in terminal.
+
+## Project Organization
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -79,7 +94,7 @@ and it will show the loss and accuracy (considering teacher forcing) of the mode
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
-# References
+## References
 
 [1] Vinyals, Oriol, et al. ["Show and tell: A neural image caption generator."](https://arxiv.org/abs/1411.4555) Proceedings of the IEEE conference on computer vision and pattern recognition. 2015.
 
