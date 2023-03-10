@@ -56,11 +56,11 @@ def predict(model, image, tokenizer):
 
         
 def main():
-    processed_data_dir = PROJECT_DIR / "data" / "processed"
-    tokenizer_json_path = processed_data_dir / "tokenizer.json"
+    data_dir = PROJECT_DIR / "data"
+    tokenizer_json_path = data_dir / "tokenizer.json"
     tokenizer = CustomSpacyTokenizer.load_from_json(tokenizer_json_path)
 
-    filenames = [os.path.join(processed_data_dir / "custom", f) for f in os.listdir(processed_data_dir / "custom") if f.endswith('.jpg')]
+    filenames = [os.path.join(data_dir / "custom", f) for f in os.listdir(data_dir / "custom") if f.endswith('.jpg')]
     images = [load_image(filename) for filename in filenames]
 
     model = build_prediction_model()
