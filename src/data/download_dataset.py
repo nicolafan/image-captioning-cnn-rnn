@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-import click
 import logging
+import os
 from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
+
+import click
 import kaggle
+from dotenv import find_dotenv, load_dotenv
 
 
 @click.command()
@@ -20,6 +22,7 @@ def main():
     kaggle.api.dataset_download_files(
         "adityajn105/flickr8k", path=raw_data_dir, force=True, quiet=True, unzip=True
     )
+    os.rename(raw_data_dir / "Images", raw_data_dir / "images")
 
     logger.info("download finished")
 
