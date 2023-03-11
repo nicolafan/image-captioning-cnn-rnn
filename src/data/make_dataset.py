@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-import click
 import logging
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
-import tensorflow as tf
-from features.build_features import CustomSpacyTokenizer
-import pandas as pd
-import os
 import math
+import os
+from pathlib import Path
+
+import click
+import pandas as pd
+import tensorflow as tf
+from dotenv import find_dotenv, load_dotenv
+
+from features.nlp.tokenizer import CustomSpacyTokenizer
 
 
 def _bytes_feature(value):
-    """Returns a bytes_list from a string / byte"""
+    """Returns a bytes_list from a string / byte, use it to save strings"""
     if isinstance(value, type(tf.constant(0))):
         value = value.numpy()  # BytesList won't unpack a string from an EagerTensor.
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
@@ -71,7 +73,7 @@ def image_example(image_string, captions, tokenizer):
     return tf.train.Example(features=tf.train.Features(feature=feature))
 
 
-def save_tf_records(split, input_dir, output_dir, captions_df, tokenizer):
+def save_tf_records(split, input_dir, output_dir, captions_df, tokenizer, n_records_per_file):
     """Convert images and related captions and save them to TFRecords
 
     Parameters
@@ -88,26 +90,30 @@ def save_tf_records(split, input_dir, output_dir, captions_df, tokenizer):
         image if it has multiple captions.
     tokenizer : CustomSpacyTokenizer
         The tokenizer to transform the strings (captions) to sequences.
+    n_records_per_file : int
+        Number of records to store in a single TFRecord
     """
     split_file = (input_dir / f"{split}_split_filenames.txt").open("r")
-    split_ids = [line.strip() for line in split_file.readlines()]
+    split_ids = [line.strip() for line in split_file.readlines()] # image ids (filenames) for the split
 
     os.makedirs(output_dir / split, exist_ok=True)
 
-    # make multiple TFRecords for the images in the split, where each record contains 200 images
-    for file_n in range(math.ceil(len(split_ids) / 200)):
-        next_rec_ids = split_ids[file_n * 200 : file_n * 200 + 200]
-        record_file = output_dir / split / f"images_{str(file_n).zfill(3)}.tf_records"
-        with tf.io.TFRecordWriter(str(record_file)) as writer:
-            for image_id in next_rec_ids:
+    # make multiple TFRecords for the images in the split, where each record contains n_records_per_file examples
+    for file_n in range(math.ceil(len(split_ids) / n_records_per_file)):
+        first_id_idx = file_n * n_records_per_file
+        next_tfrec_ids = split_ids[first_id_idx:first_id_idx + n_records_per_file]
+        record_file_path = output_dir / split / f"images_{str(file_n).zfill(3)}.tf_records"
+
+        with tf.io.TFRecordWriter(str(record_file_path)) as writer:
+            for image_id in next_tfrec_ids:
                 image_captions = captions_df[captions_df["image"] == image_id][
                     "caption"
-                ].tolist()
+                ].tolist() # make a list of the captions for this image
                 if image_id in split_ids:
                     image_string = open(
                         input_dir / "images" / f"{str(image_id)}", "rb"
-                    ).read()
-                    tf_example = image_example(image_string, image_captions, tokenizer)
+                    ).read() # encode image as string
+                    tf_example = image_example(image_string, image_captions, tokenizer) # create an (image, caption) example
                     writer.write(tf_example.SerializeToString())
 
 
@@ -125,20 +131,17 @@ def main():
     processed_data_dir = project_dir / "data" / "processed"
 
     # create and fit the tokenizer
-    tokenizer = CustomSpacyTokenizer(
-        max_len=-1, vocab_size=8000, oov=False, pad_sequences=True
-    )
+    tokenizer = CustomSpacyTokenizer.from_config()
     captions_df = pd.read_csv(raw_data_dir / "captions.txt", sep=",")
-
     logger.info("fitting tokenizer on captions")
     tokenizer.fit(captions_df["caption"].tolist())
-    tokenizer.save_to_json(processed_data_dir)
+    tokenizer.save_to_json() # saves the tokenizer as a json, in the same package of tokenizer.py
     logger.info("tokenizer trained!")
 
     # create the tf records
     for split in "train", "val", "test":
         logger.info(f"making {split} records")
-        save_tf_records(split, raw_data_dir, processed_data_dir, captions_df, tokenizer)
+        save_tf_records(split, raw_data_dir, processed_data_dir, captions_df, tokenizer, 200)
         logger.info(f"{split} records ready!")
 
     logger.info("processed dataset TFRecords created!")
