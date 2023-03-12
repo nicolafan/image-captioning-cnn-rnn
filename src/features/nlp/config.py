@@ -5,6 +5,7 @@ class TokenizerConfig:
     the tokenizer config, and it will be loaded when instantiating
     a tokenizer using `from_config`.
     """
+
     MAX_LEN = -1
     VOCAB_SIZE = 8000
     OOV = False

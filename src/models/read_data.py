@@ -61,7 +61,9 @@ def read_split_dataset(split, img_shape, caption_length, batch_size):
     # used as the reference caption for the results
     # because of 0-indexing we also have to decrease by 1 the slid_caption_seq
     def _to_image_captions_pairs(example):
-        image = tf.image.decode_jpeg(example["image_raw"], channels=3) # last dim of img_shape is 3
+        image = tf.image.decode_jpeg(
+            example["image_raw"], channels=3
+        )  # last dim of img_shape is 3
         image = tf.image.resize(image, size=img_shape[:-1])
         image = tf.cast(image, tf.float32)
         image = tf.keras.applications.inception_v3.preprocess_input(image)
@@ -79,7 +81,7 @@ def read_split_dataset(split, img_shape, caption_length, batch_size):
         slid_caption_seq -= 1
 
         return (image, caption_seq), slid_caption_seq
-    
+
     # parse the examples
     parsed_dataset = dataset.map(_parse_example_fn)
     # associate n captions in a single tensor to their image
@@ -91,5 +93,5 @@ def read_split_dataset(split, img_shape, caption_length, batch_size):
             lambda caption: _to_input_output_pairs(image, caption)
         )
     )
-    
+
     return image_caption_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)

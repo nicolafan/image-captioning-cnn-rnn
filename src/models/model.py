@@ -9,10 +9,11 @@ class ShowAndTell(keras.Model):
 
     The RNN layer(s) must be stateful at inference time and not stateful during training;
     this is because during training we will use teacher forcing to train the model, while
-    at inference time, we must predict a word at a time and refeed it to the network to 
+    at inference time, we must predict a word at a time and refeed it to the network to
     get the next word. We will use padding to make this operation as flawless and efficient
     as possible, as if the network was making a single prediction.
     """
+
     def __init__(
         self,
         n_rnn_neurons,
@@ -41,12 +42,12 @@ class ShowAndTell(keras.Model):
         # RNN state
         self.dense1 = keras.layers.Dense(
             n_rnn_neurons, activation="tanh", name="enc_dense1"
-        )  
-        self.dropout1 = keras.layers.Dropout(0.3) # add a dropout over the encoding
+        )
+        self.dropout1 = keras.layers.Dropout(0.3)  # add a dropout over the encoding
 
         # embedding
         self.embedding1 = keras.layers.Embedding(
-            input_dim=vocab_size + 1, # +1 because 0 is padding
+            input_dim=vocab_size + 1,  # +1 because 0 is padding
             output_dim=word_embeddings_size,
             input_length=caption_length,
             name="embedding1",
@@ -86,7 +87,7 @@ class ShowAndTell(keras.Model):
         output1 = self.output1(dropout2, mask=mask)
 
         return output1
-    
+
     def get_config(self):
         config = super().get_config()
         show_and_tell_config = {
@@ -94,7 +95,7 @@ class ShowAndTell(keras.Model):
             "img_shape": self.img_shape,
             "caption_length": self.caption_length,
             "word_embeddings_size": self.word_embeddings_size,
-            "vocab_size": self.vocab_size
+            "vocab_size": self.vocab_size,
         }
         config.update(show_and_tell_config)
         return config

@@ -13,12 +13,20 @@ from models.read_data import read_split_dataset
 
 
 @click.command()
-@click.option("--img", default=299, help="Size of the input images (equal height and width)")
-@click.option("--n_rnn_neurons", default=512, help="Size of the RNN states (and of the img encoding)")
+@click.option(
+    "--img", default=299, help="Size of the input images (equal height and width)"
+)
+@click.option(
+    "--n_rnn_neurons",
+    default=512,
+    help="Size of the RNN states (and of the img encoding)",
+)
 @click.option("--embedding_size", default=512, help="Size of the word embeddings")
 @click.option("--batch_size", default=15, help="Batch size (choose a multiple of 5)")
 @click.option("--epochs", default=10, help="Number of epochs")
-@click.option("--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer")
+@click.option(
+    "--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer"
+)
 def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
     tf.random.set_seed(42)
     project_dir = Path(__file__).resolve().parents[2]
@@ -63,7 +71,9 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
     with open(model_config_filename, "w") as file:
         file.write(model_json_str)
     model.save_weights(weights_filename)
-    print(f"saved model config and weights in {model_config_filename} and {weights_filename}")
+    print(
+        f"saved model config and weights in {model_config_filename} and {weights_filename}"
+    )
 
 
 if __name__ == "__main__":
