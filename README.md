@@ -41,7 +41,6 @@ python src/models/train_model.py
 and it will show the loss and accuracy (considering teacher forcing) of the model at training time. It will also compute the same values on the validation dataset. The configuration and the weights of the trained model are saved inside `/models/config` and `/models/weights` (with the same filename - except for the extension). By saving the model confiuration, you can experiment with different training and model options.
 
 The default training configuration is inspired to the one proposed in the paper, but different options can be provided via command-line when running the training script. 
-
 You can check the training options to configure the model and the training process via
 ```
 python src/models/train_model.py --help
@@ -57,7 +56,7 @@ Finally, evaluate the model with
 ```
 python src/models/evaluate_model.py
 ```
-to compute the BLEU-1 and BLEU-4 scores for the model on the Flickr8k test or val set (specify the `--mode` option). 
+to compute the BLEU-1 and BLEU-4 scores for the model on the Flickr8k test or val set (specify the `--model_filename` and `--mode` option). 
 
 ## Project Organization
 
