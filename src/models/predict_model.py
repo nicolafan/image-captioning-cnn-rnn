@@ -26,9 +26,7 @@ def build_prediction_model(model_config_filename):
         weights_path = weights_dir / f"{model_config_filename}.h5"
 
     with model_config_path.open("r") as model_config_file:
-        model_config = json.load(model_config_file)["config"]
-        model_config["mode"] = "inference"
-        model = ShowAndTell.from_config(model_config)
+        model = keras.models.model_from_json(model_config_file.read(), custom_objects={"ShowAndTell": ShowAndTell})
         # build the model with the input shapes
         model.build(input_shape=[[1] + model.img_shape, [1, model.caption_length]])
         # load corresponding weights
@@ -65,6 +63,50 @@ def predict(model, image, tokenizer):
     model.reset_states()
     return tokenizer.sequence_to_text(result)
 
+
+def predict(model: ShowAndTell, image, tokenizer, beam_width=3):
+    next_token_idx = tokenizer.vocab["<start>"]
+    initial_hypothesis = {
+        "seq": [next_token_idx],
+        "score": 0.0,
+        "norm_score": 0.0
+    }
+    beam = [initial_hypothesis]
+    image_inp = tf.expand_dims(image, 0)
+
+    for l in range(1, model.caption_length):
+        candidates = []
+        for hypo in beam:
+            if hypo["seq"][-1] == tokenizer.vocab["<end>"]:
+                continue
+            seq = hypo["seq"] + [0] * (model.caption_length-len(hypo["seq"]))
+            seq_inp = tf.constant([seq], dtype=tf.int32)
+
+            distribution = model((image_inp, seq_inp), training=False)[0][l-1].numpy() # frist batch, first word
+            top_indices = np.argsort(distribution)[-beam_width:]
+            top_words = [int(i)+1 for i in top_indices] # +1 because model outputs are decreased by one
+            top_probs = distribution[top_indices]
+
+            # add the candidates to the list
+            for word, prob in zip(top_words, top_probs):
+                candidate_seq = hypo["seq"] + [word]
+                candidate_score = hypo["score"] + np.log(prob)
+                candidate_norm_score = candidate_score / l
+
+                candidate = {
+                    "seq": candidate_seq,
+                    "score": candidate_score,
+                    "norm_score": candidate_norm_score
+                }
+                candidates.append(candidate)
+
+        # keep the top beam_width candidates based on their score
+        beam = [hypo for hypo in beam if hypo["seq"][-1] == tokenizer.vocab["<end>"]]
+        beam = sorted(beam + candidates, key=lambda x: x["norm_score"], reverse=True)[:beam_width]
+
+    return tokenizer.sequence_to_text(beam[0]["seq"])
+
+
 @click.command()
 @click.option("--model_filename", default="", help="Filename (without extension) of the model config and weights to load")        
 def main(model_filename):
@@ -77,7 +119,7 @@ def main(model_filename):
 
     model = build_prediction_model(model_filename)
     for image in images:
-        result = predict(model, image, tokenizer)
+        result = predict(model, image, tokenizer, beam_width=10)
         print(result)
 
 
