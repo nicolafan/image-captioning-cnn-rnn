@@ -1,29 +1,40 @@
-import tensorflow as tf
-from models.model import ShowAndTell
-from features.build_features import CustomSpacyTokenizer
-from pathlib import Path
+import json
 import os
-import numpy as np
-import matplotlib.pyplot as plt
+from pathlib import Path
 
+import click
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
+from features.nlp.tokenizer import CustomSpacyTokenizer
+from models.model import ShowAndTell
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 
-def build_prediction_model():
-    model = ShowAndTell(
-        n_rnn_neurons=512,
-        img_shape=(299, 299, 3),
-        caption_length=16,
-        word_embeddings_size=512,
-        vocab_size=8000,
-        stateful=True
-    )
+
+def build_prediction_model(model_config_filename):
+    model_config_dir = PROJECT_DIR / "models" / "config"
     weights_dir = PROJECT_DIR / "models" / "weights"
-    last_weights_file = os.listdir(weights_dir)[-1]
-    model.build(input_shape=[(1,) + (299, 299, 3), (1, 16)])
-    model.load_weights(f"{os.path.abspath(weights_dir / last_weights_file)}", by_name=True)
-    model.summary()
-    return model
+    if model_config_filename == "":
+        last_name = os.listdir(model_config_dir)[-1]
+        model_config_path = model_config_dir / last_name
+        weights_path = weights_dir / f"{last_name.removesuffix('.json')}.h5"
+    else:
+        model_config_path = model_config_dir / f"{model_config_filename}.json" 
+        weights_path = weights_dir / f"{model_config_filename}.h5"
+
+    with model_config_path.open("r") as model_config_file:
+        model_config = json.load(model_config_file)["config"]
+        model_config["mode"] = "inference"
+        model = ShowAndTell.from_config(model_config)
+        # build the model with the input shapes
+        model.build(input_shape=[[1] + model.img_shape, [1, model.caption_length]])
+        # load corresponding weights
+        model.load_weights(weights_path, by_name=True)
+        model.summary()
+        return model
 
 
 def load_image(filename):
@@ -46,7 +57,7 @@ def predict(model, image, tokenizer):
         image_inp = tf.expand_dims(image, 0)
         seq_inp = tf.constant([seq],  dtype=tf.int32)
 
-        distribution = model((image_inp, seq_inp))[0][0] # first example, first word
+        distribution = model((image_inp, seq_inp), training=False)[0][0] # first example, first word
         next_token_idx = tf.argmax(distribution).numpy() + 1
         result.append(next_token_idx)
 
@@ -54,16 +65,17 @@ def predict(model, image, tokenizer):
     model.reset_states()
     return tokenizer.sequence_to_text(result)
 
-        
-def main():
+@click.command()
+@click.option("--model_filename", default="", help="Filename (without extension) of the model config and weights to load")        
+def main(model_filename):
     data_dir = PROJECT_DIR / "data"
-    tokenizer_json_path = data_dir / "tokenizer.json"
-    tokenizer = CustomSpacyTokenizer.load_from_json(tokenizer_json_path)
+    tokenizer = CustomSpacyTokenizer.from_json()
 
-    filenames = [os.path.join(data_dir / "custom", f) for f in os.listdir(data_dir / "custom") if f.endswith('.jpg')]
-    images = [load_image(filename) for filename in filenames]
+    # load the iamges from /data/custom
+    image_filenames = [os.path.join(data_dir / "custom", f) for f in os.listdir(data_dir / "custom") if f.endswith('.jpg')]
+    images = [load_image(filename) for filename in image_filenames]
 
-    model = build_prediction_model()
+    model = build_prediction_model(model_filename)
     for image in images:
         result = predict(model, image, tokenizer)
         print(result)
