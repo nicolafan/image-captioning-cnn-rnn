@@ -20,7 +20,6 @@ class ShowAndTell(keras.Model):
         caption_length,
         word_embeddings_size,
         vocab_size,
-        stateful=False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -29,7 +28,6 @@ class ShowAndTell(keras.Model):
         self.caption_length = caption_length
         self.word_embeddings_size = word_embeddings_size
         self.vocab_size = vocab_size
-        self.stateful = stateful
 
         # encoder
         self.inception1 = keras.applications.InceptionV3(
@@ -58,7 +56,6 @@ class ShowAndTell(keras.Model):
         self.lstm1 = keras.layers.LSTM(
             n_rnn_neurons,
             return_sequences=True,
-            stateful=self.stateful,
             name="dec_lstm1",
         )
         self.dropout2 = keras.layers.Dropout(0.5)
@@ -81,21 +78,9 @@ class ShowAndTell(keras.Model):
         embedding1 = self.embedding1(input_caption)
 
         # decode
-        # we check if the hidden state of the RNN is empty, in which case in a stateful
-        # RNN (inference time) we must provide it with the image encoding. Otherwise
-        # the state will correspond to the previous prediction so we must keep it
-        lstm1_hidden_state = self.lstm1.states[0]
-        if lstm1_hidden_state is None or tf.reduce_all(tf.equal(lstm1_hidden_state, tf.constant(0.0))):
-            is_lstm1_hidden_empty = True
-        else:
-            is_lstm1_hidden_empty = False
-
-        if not self.stateful or is_lstm1_hidden_empty:
-            lstm1 = self.lstm1(
-                embedding1, mask=mask, initial_state=[dropout1, tf.zeros_like(dropout1)]
-            )
-        else:
-            lstm1 = self.lstm1(embedding1, mask=mask)
+        lstm1 = self.lstm1(
+            embedding1, mask=mask, initial_state=[dropout1, tf.zeros_like(dropout1)]
+        )
         # lstm2 = self.lstm2(lstm1) if you need more recurrent layers add them here and manage the state accordingly
         dropout2 = self.dropout2(lstm1)
         output1 = self.output1(dropout2, mask=mask)
@@ -113,14 +98,3 @@ class ShowAndTell(keras.Model):
         }
         config.update(show_and_tell_config)
         return config
-    
-    @classmethod
-    def from_config(cls, config):
-        if config["mode"] == "training":
-            del config["mode"]
-            return cls(**config, stateful=False)
-        elif config["mode"] == "inference":
-            del config["mode"]
-            return cls(**config, stateful=True)
-        else:
-            raise ValueError(f"`mode` must be 'training' or 'inference', got {config['mode']} instead")

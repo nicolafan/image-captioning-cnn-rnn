@@ -36,7 +36,7 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
 
     # create model - show and tell paper configuration
     model = ShowAndTell(
-        n_rnn_neurons, img_shape, caption_length, embedding_size, vocab_size, stateful=False
+        n_rnn_neurons, img_shape, caption_length, embedding_size, vocab_size
     )
     model.build(input_shape=[(None,) + img_shape, (None, caption_length)])
     model.summary()
