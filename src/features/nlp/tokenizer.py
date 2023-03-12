@@ -1,9 +1,9 @@
-import spacy
 import json
-import os
 from pathlib import Path
-from features.nlp.config import TokenizerConfig
 
+import spacy
+
+from src.features.nlp.config import TokenizerConfig
 
 nlp = spacy.load("en_core_web_sm")
 

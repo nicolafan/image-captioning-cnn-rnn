@@ -9,7 +9,7 @@ import pandas as pd
 import tensorflow as tf
 from dotenv import find_dotenv, load_dotenv
 
-from features.nlp.tokenizer import CustomSpacyTokenizer
+from src.features.nlp.tokenizer import CustomSpacyTokenizer
 
 
 def _bytes_feature(value):

@@ -4,7 +4,7 @@ from pathlib import Path
 import tensorflow as tf
 from tensorflow import keras
 
-from models.model import ShowAndTell
+from src.models.model import ShowAndTell
 
 
 def load_image_jpeg(filename):

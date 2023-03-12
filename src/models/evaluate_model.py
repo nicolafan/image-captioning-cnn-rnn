@@ -1,10 +1,12 @@
 import click
 from tqdm import tqdm
-from models.read_data import read_split_dataset
-from models.utils import build_saved_model
-from features.nlp.tokenizer import CustomSpacyTokenizer
-from models.predict_model import predict
-from models.metrics import bleu
+
+from src.features.nlp.tokenizer import CustomSpacyTokenizer
+from src.models.metrics import bleu
+from src.models.predict_model import predict
+from src.models.read_data import read_split_dataset
+from src.models.utils import build_saved_model
+
 
 @click.command()
 @click.option(

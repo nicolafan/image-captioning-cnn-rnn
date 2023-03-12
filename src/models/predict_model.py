@@ -7,9 +7,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from features.nlp.tokenizer import CustomSpacyTokenizer
-from models.model import ShowAndTell
-from models.utils import load_image_jpeg, build_saved_model
+from src.features.nlp.tokenizer import CustomSpacyTokenizer
+from src.models.model import ShowAndTell
+from src.models.utils import load_image_jpeg, build_saved_model
 
 
 def predict(model: ShowAndTell, image, tokenizer, beam_width=3):

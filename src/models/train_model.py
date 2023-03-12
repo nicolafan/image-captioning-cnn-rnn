@@ -6,10 +6,10 @@ from pathlib import Path
 import tensorflow as tf
 from tensorflow import keras
 
-import models.metrics as metrics
-from features.nlp.tokenizer import CustomSpacyTokenizer
-from models.model import ShowAndTell
-from models.read_data import read_split_dataset
+import src.models.metrics as metrics
+from src.features.nlp.tokenizer import CustomSpacyTokenizer
+from src.models.model import ShowAndTell
+from src.models.read_data import read_split_dataset
 
 
 @click.command()
