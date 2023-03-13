@@ -110,6 +110,10 @@ to compute the BLEU-1 and BLEU-4 scores for the model on the Flickr8k test or va
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 
+## Contributing
+
+Contributions of any type (code, docs, suggestions...) are highly appreciated! Feel free to open an issue and to ask questions with the `question` label.
+
 ## References
 
 [1] Vinyals, Oriol, et al. ["Show and tell: A neural image caption generator."](https://arxiv.org/abs/1411.4555) Proceedings of the IEEE conference on computer vision and pattern recognition. 2015.
