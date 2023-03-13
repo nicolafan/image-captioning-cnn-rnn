@@ -77,9 +77,28 @@ def main(model_filename):
     images = [load_image_jpeg(filename) for filename in image_filenames]
 
     model = build_saved_model(model_filename)
+
+    predictions = []
     for image in images:
-        result = predict(model, image, tokenizer, beam_width=10)
-        print(result)
+        result = predict(model, image, tokenizer, beam_width=3)
+        predictions.append((image, result))
+
+    # visualize results
+    # Create a grid of subplots
+    fig, axs = plt.subplots(len(images), 1)
+
+    if len(images) == 1:
+        image, caption = predictions[0]
+        axs.imshow(image)
+        axs.set_title(caption)
+    else:
+        for i, (image, caption) in enumerate(predictions):
+            # Plot each image in a separate subplot with a caption
+            axs[i].imshow(image)
+            axs[i].set_title(caption)
+
+    # Show the plot
+    plt.show()
 
 
 if __name__ == "__main__":
