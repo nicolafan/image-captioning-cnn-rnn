@@ -3,6 +3,7 @@ from pathlib import Path
 
 import click
 import matplotlib.pyplot as plt
+import math
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -85,19 +86,26 @@ def main(model_filename):
 
     # visualize results
     # Create a grid of subplots
-    fig, axs = plt.subplots(len(images), 1)
+    fig, axs = plt.subplots(math.ceil(len(images)/3), 3, figsize=(5, 5))
 
     if len(images) == 1:
         image, caption = predictions[0]
         axs.imshow(image)
         axs.set_title(caption)
     else:
-        for i, (image, caption) in enumerate(predictions):
+        i = 0
+        j = 0
+        for (image, caption) in predictions:
             # Plot each image in a separate subplot with a caption
-            axs[i].imshow(image)
-            axs[i].set_title(caption)
+            axs[i][j].imshow(image)
+            axs[i][j].set_title(caption, fontsize="8")
+            j += 1
+            if j >= 3:
+                j = 0
+                i += 1
 
     # Show the plot
+    plt.axis("off")
     plt.show()
 
 

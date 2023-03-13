@@ -56,7 +56,15 @@ Finally, evaluate the model with
 ```
 python src/models/evaluate_model.py
 ```
-to compute the BLEU-1 and BLEU-4 scores for the model on the Flickr8k test or val set (specify the `--model_filename` and `--mode` option). 
+to compute the BLEU-1 and BLEU-4 scores for the model on the Flickr8k test or val set (specify the `--model_filename` and `--mode` option).
+
+## Sample Predictions
+
+Sample predictions on the Flickr8k validation set after 15 epochs with the default model configuration, with a beam width of 3:
+
+![sample validation predictions](reports/figures/sample_val_predictions.png)
+
+Notice that the validation loss was still dropping after 15 epochs, so model training could have been continued to achieve better results. Nevertheless, the model seems to be learning some useful patterns for describing the images.
 
 ## Project Organization
 
