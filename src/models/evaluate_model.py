@@ -14,24 +14,30 @@ from src.models.utils import build_saved_model
     default="",
     help="Filename (without extension) of the model config and weights to load",
 )
-@click.option("--mode", default="test", help="Evaluation mode: 'val' or 'test', default is 'test'")
+@click.option(
+    "--mode", default="test", help="Evaluation mode: 'val' or 'test', default is 'test'"
+)
 def main(model_filename, mode):
-    model = build_saved_model(model_filename)
+    model = build_saved_model(model_filename, mode="inference")
     tokenizer = CustomSpacyTokenizer.from_json()
-    dataset = read_split_dataset(mode, model.img_shape, model.caption_length, batch_size=5)
+    dataset = read_split_dataset(
+        mode, model.img_shape, model.caption_length, batch_size=5
+    )
 
     print(f"MODEL {model_filename}")
     for beam_width in 1, 3, 5:
         print(f"BEAM WIDTH: {beam_width}")
-        total_bleu = [0., 0.]
+        total_bleu = [0.0, 0.0]
         n = 0
 
         for (image, captions), _ in tqdm(dataset):
             n += 1
             prediction = predict(model, image[0], tokenizer, beam_width)
             clean_prediction = tokenizer.clean_text(prediction)
-            
-            captions = [tokenizer.sequence_to_text(captions[i].numpy()) for i in range(5)]
+
+            captions = [
+                tokenizer.sequence_to_text(captions[i].numpy()) for i in range(5)
+            ]
             clean_captions = [tokenizer.clean_text(caption) for caption in captions]
 
             example_bleu = bleu(clean_captions, clean_prediction)

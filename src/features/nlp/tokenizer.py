@@ -120,10 +120,12 @@ class CustomSpacyTokenizer:
     def sequence_to_text(self, sequence):
         inv_vocab = dict((v, k) for k, v in self.vocab.items())
         return " ".join(inv_vocab[x] for x in sequence if x >= 1)
-    
+
     def clean_text(self, text):
         special_tokens = ("<start>", "<end>", "<oov>")
-        return " ".join(token for token in text.split(" ") if token not in special_tokens)
+        return " ".join(
+            token for token in text.split(" ") if token not in special_tokens
+        )
 
     def save_to_json(self):
         """Save the current tokenizer (with vocab) as JSON

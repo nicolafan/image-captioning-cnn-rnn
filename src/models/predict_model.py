@@ -77,7 +77,7 @@ def main(model_filename):
     ]
     images = [load_image_jpeg(filename) for filename in image_filenames]
 
-    model = build_saved_model(model_filename)
+    model = build_saved_model(model_filename, mode="inference")
 
     predictions = []
     for image in images:
@@ -86,7 +86,7 @@ def main(model_filename):
 
     # visualize results
     # Create a grid of subplots
-    fig, axs = plt.subplots(math.ceil(len(images)/3), 3, figsize=(5, 5))
+    fig, axs = plt.subplots(math.ceil(len(images) / 3), 3, figsize=(5, 5))
 
     if len(images) == 1:
         image, caption = predictions[0]
@@ -95,7 +95,7 @@ def main(model_filename):
     else:
         i = 0
         j = 0
-        for (image, caption) in predictions:
+        for image, caption in predictions:
             # Plot each image in a separate subplot with a caption
             axs[i][j].imshow(image)
             axs[i][j].set_title(caption, fontsize="8")

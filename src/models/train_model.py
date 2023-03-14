@@ -1,7 +1,12 @@
 import os
+import json
 import time
 import click
 from pathlib import Path
+
+
+import logging
+from dotenv import find_dotenv, load_dotenv
 
 import tensorflow as tf
 from tensorflow import keras
@@ -10,6 +15,7 @@ import src.models.metrics as metrics
 from src.features.nlp.tokenizer import CustomSpacyTokenizer
 from src.models.model import ShowAndTell
 from src.models.read_data import read_split_dataset
+from src.models.utils import build_saved_model
 
 
 @click.command()
@@ -27,10 +33,23 @@ from src.models.read_data import read_split_dataset
 @click.option(
     "--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer"
 )
-def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
+@click.option("--model_filename", default=None, help="File name of the saved model")
+def main(
+    img,
+    n_rnn_neurons,
+    embedding_size,
+    batch_size,
+    epochs,
+    learning_rate,
+    model_filename,
+):
     tf.random.set_seed(42)
+    logger = logging.getLogger(__name__)
+
     project_dir = Path(__file__).resolve().parents[2]
     models_dir = project_dir / "models"
+    config_dir = models_dir / "config"
+    weights_dir = models_dir / "weights"
 
     # train config
     img_shape = (img, img, 3)
@@ -42,11 +61,29 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
     train_dataset = read_split_dataset("train", img_shape, caption_length, batch_size)
     val_dataset = read_split_dataset("val", img_shape, caption_length, batch_size)
 
-    # create model - show and tell paper configuration
-    model = ShowAndTell(
-        n_rnn_neurons, img_shape, caption_length, embedding_size, vocab_size
-    )
-    model.build(input_shape=[(None,) + img_shape, (None, caption_length)])
+    if model_filename is not None:
+        # load config from saved json file and load model from saved h5 file
+        try:
+            logger.info(
+                f"Model config loaded from: {os.path.abspath(config_dir)}{os.sep}{model_filename}.json"
+            )
+            logger.info(
+                f"Model weights loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5"
+            )
+            model = build_saved_model(model_filename, mode="training")
+            logger.info(
+                f"Model loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5"
+            )
+        except OSError as e:
+            logger.error(e)
+            raise
+    else:
+        # create model - show and tell paper configuration
+        model = ShowAndTell(
+            n_rnn_neurons, img_shape, caption_length, embedding_size, vocab_size
+        )
+        model.build(input_shape=[(None,) + img_shape, (None, caption_length)])
+
     model.summary()
 
     # train model
@@ -59,10 +96,6 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
 
     # save weights and config
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    weights_dir = models_dir / "weights"
-    os.makedirs(weights_dir, exist_ok=True)
-    config_dir = models_dir / "config"
-    os.makedirs(config_dir, exist_ok=True)
 
     model_config_filename = f"{os.path.abspath(config_dir)}{os.sep}train_{timestr}.json"
     weights_filename = f"{os.path.abspath(weights_dir)}{os.sep}train_{timestr}.h5"
@@ -71,10 +104,18 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate):
     with open(model_config_filename, "w") as file:
         file.write(model_json_str)
     model.save_weights(weights_filename)
-    print(
-        f"saved model config and weights in {model_config_filename} and {weights_filename}"
+
+    logger.info(
+        f"Saved model config and weights in {model_config_filename} and {weights_filename}"
     )
 
 
 if __name__ == "__main__":
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    # find .env automagically by walking up directories until it's found, then
+    # load up the .env entries as environment variables
+    load_dotenv(find_dotenv())
+
     main()
