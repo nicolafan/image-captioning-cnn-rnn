@@ -4,6 +4,10 @@ import time
 import click
 from pathlib import Path
 
+
+import logging
+from dotenv import find_dotenv, load_dotenv
+
 import tensorflow as tf
 from tensorflow import keras
 
@@ -30,10 +34,14 @@ from src.models.read_data import read_split_dataset
     "--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer"
 )
 @click.option(
-    "--model_filename",default=None, help="File name of the saved model"
+    "--model_filename",default=None, help="Learning rate for the Adam optimizer"
 )
 def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,model_filename):
     tf.random.set_seed(42)
+    logger = logging.getLogger(__name__)
+    
+    
+    
     project_dir = Path(__file__).resolve().parents[2]
     models_dir = project_dir / "models"
 
@@ -60,12 +68,14 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
         try:
             with open(f"{os.path.abspath(config_dir)}{os.sep}{model_filename}.json",'r') as json_file:
                 json_savedModel = json.load(json_file)
+            logger.info(f"Checkpoint loaded from :{os.path.abspath(config_dir)}{os.sep}{model_filename}.json")
 
             model = ShowAndTell(**json_savedModel["config"])
             model.build(input_shape=[(None,) + img_shape, (None, caption_length)])
             model.load_weights(f"{os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5")
+            logger.info(f"Model loaded from :{os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5")
         except Exception as e:
-            print(e)
+            logger.info(e)
             raise
         
     else:
@@ -97,10 +107,18 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
     with open(model_config_filename, "w") as file:
         file.write(model_json_str)
     model.save_weights(weights_filename)
-    print(
+   
+    logger.info(
         f"saved model config and weights in {model_config_filename} and {weights_filename}"
     )
 
 
 if __name__ == "__main__":
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    # find .env automagically by walking up directories until it's found, then
+    # load up the .env entries as environment variables
+    load_dotenv(find_dotenv())
+
     main()
