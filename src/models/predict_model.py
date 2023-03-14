@@ -77,7 +77,7 @@ def main(model_filename):
     ]
     images = [load_image_jpeg(filename) for filename in image_filenames]
 
-    model = build_saved_model(model_filename)
+    model = build_saved_model(model_filename, mode="inference")
 
     predictions = []
     for image in images:

@@ -16,7 +16,7 @@ from src.models.utils import build_saved_model
 )
 @click.option("--mode", default="test", help="Evaluation mode: 'val' or 'test', default is 'test'")
 def main(model_filename, mode):
-    model = build_saved_model(model_filename)
+    model = build_saved_model(model_filename, mode="inference")
     tokenizer = CustomSpacyTokenizer.from_json()
     dataset = read_split_dataset(mode, model.img_shape, model.caption_length, batch_size=5)
 
