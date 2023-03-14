@@ -79,6 +79,10 @@ target/
 # exclude data from source control by default
 /data/
 
+# exclude model configs and weights
+/models/config
+/models/weights
+
 # Mac OS-specific storage files
 .DS_Store
 
