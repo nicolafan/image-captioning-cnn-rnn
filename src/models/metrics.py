@@ -42,11 +42,10 @@ def bleu(captions_true, caption_pred):
     n: int
         N-grams to consider (correspond to computing BLEU-n)
     """
-    weights = [
-        (1, 0, 0, 0),
-        (1./4., 1./4., 1./4., 1./4.)
-    ]
+    weights = [(1, 0, 0, 0), (1.0 / 4.0, 1.0 / 4.0, 1.0 / 4.0, 1.0 / 4.0)]
     captions_true = [caption.split(" ") for caption in captions_true]
     caption_pred = caption_pred.split(" ")
 
-    return nltk.translate.bleu_score.sentence_bleu(captions_true, caption_pred, weights=weights)
+    return nltk.translate.bleu_score.sentence_bleu(
+        captions_true, caption_pred, weights=weights
+    )

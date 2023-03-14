@@ -38,7 +38,12 @@ def build_saved_model(model_filename, mode="training"):
             )
             # build the model with the input shapes
             batch_size = None if mode == "training" else 1
-            model.build(input_shape=[[batch_size] + model.img_shape, [batch_size, model.caption_length]])
+            model.build(
+                input_shape=[
+                    [batch_size] + model.img_shape,
+                    [batch_size, model.caption_length],
+                ]
+            )
             # load corresponding weights
             model.load_weights(weights_path, by_name=True)
             model.summary()

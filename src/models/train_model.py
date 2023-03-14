@@ -18,7 +18,6 @@ from src.models.read_data import read_split_dataset
 from src.models.utils import build_saved_model
 
 
-
 @click.command()
 @click.option(
     "--img", default=299, help="Size of the input images (equal height and width)"
@@ -34,13 +33,19 @@ from src.models.utils import build_saved_model
 @click.option(
     "--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer"
 )
-@click.option(
-    "--model_filename", default=None, help="File name of the saved model"
-)
-def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,model_filename):
+@click.option("--model_filename", default=None, help="File name of the saved model")
+def main(
+    img,
+    n_rnn_neurons,
+    embedding_size,
+    batch_size,
+    epochs,
+    learning_rate,
+    model_filename,
+):
     tf.random.set_seed(42)
     logger = logging.getLogger(__name__)
-    
+
     project_dir = Path(__file__).resolve().parents[2]
     models_dir = project_dir / "models"
     config_dir = models_dir / "config"
@@ -55,14 +60,20 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
     # read tf.data.Datasets
     train_dataset = read_split_dataset("train", img_shape, caption_length, batch_size)
     val_dataset = read_split_dataset("val", img_shape, caption_length, batch_size)
-    
+
     if model_filename is not None:
         # load config from saved json file and load model from saved h5 file
         try:
-            logger.info(f"Model config loaded from: {os.path.abspath(config_dir)}{os.sep}{model_filename}.json")
-            logger.info(f"Model weights loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5")
+            logger.info(
+                f"Model config loaded from: {os.path.abspath(config_dir)}{os.sep}{model_filename}.json"
+            )
+            logger.info(
+                f"Model weights loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5"
+            )
             model = build_saved_model(model_filename, mode="training")
-            logger.info(f"Model loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5")
+            logger.info(
+                f"Model loaded from: {os.path.abspath(weights_dir)}{os.sep}{model_filename}.h5"
+            )
         except OSError as e:
             logger.error(e)
             raise
@@ -72,10 +83,9 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
             n_rnn_neurons, img_shape, caption_length, embedding_size, vocab_size
         )
         model.build(input_shape=[(None,) + img_shape, (None, caption_length)])
-        
-        
+
     model.summary()
-  
+
     # train model
     model.compile(
         loss=tf.keras.losses.SparseCategoricalCrossentropy(ignore_class=-1),
@@ -84,7 +94,6 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
     )
     model.fit(train_dataset, validation_data=val_dataset, epochs=epochs)
 
-    
     # save weights and config
     timestr = time.strftime("%Y%m%d-%H%M%S")
 
@@ -95,7 +104,7 @@ def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,m
     with open(model_config_filename, "w") as file:
         file.write(model_json_str)
     model.save_weights(weights_filename)
-   
+
     logger.info(
         f"Saved model config and weights in {model_config_filename} and {weights_filename}"
     )
