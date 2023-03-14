@@ -34,7 +34,7 @@ from src.models.read_data import read_split_dataset
     "--learning_rate", default=0.0001, help="Learning rate for the Adam optimizer"
 )
 @click.option(
-    "--model_filename",default=None, help="Learning rate for the Adam optimizer"
+    "--model_filename",default=None, help="File name of the saved model"
 )
 def main(img, n_rnn_neurons, embedding_size, batch_size, epochs, learning_rate,model_filename):
     tf.random.set_seed(42)
