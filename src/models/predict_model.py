@@ -99,6 +99,7 @@ def main(model_filename):
             # Plot each image in a separate subplot with a caption
             axs[i][j].imshow(image)
             axs[i][j].set_title(caption, fontsize="8")
+            axs[i][j].axis('off')
             j += 1
             if j >= 3:
                 j = 0
