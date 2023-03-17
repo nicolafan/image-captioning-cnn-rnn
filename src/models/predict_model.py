@@ -92,6 +92,7 @@ def main(model_filename):
         image, caption = predictions[0]
         axs.imshow(image)
         axs.set_title(caption)
+        axs.axis("off")
     else:
         i = 0
         j = 0
@@ -99,13 +100,14 @@ def main(model_filename):
             # Plot each image in a separate subplot with a caption
             axs[i][j].imshow(image)
             axs[i][j].set_title(caption, fontsize="8")
+            axs[i][j].axis('off')
+            axs[i][j].axis("off")
             j += 1
             if j >= 3:
                 j = 0
                 i += 1
 
     # Show the plot
-    plt.axis("off")
     plt.show()
 
 
